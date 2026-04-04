@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — ShopFlow{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block extra_head %}
+<style>
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:4px}
+.product-tile{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;
+  transition:border-color 0.15s,transform 0.15s;cursor:default;
+}
+.product-tile:hover{border-color:rgba(108,92,231,0.3);transform:translateY(-1px)}
+.pt-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.pt-price{font-size:17px;font-weight:600;letter-spacing:-0.03em;color:var(--teal)}
+.pt-stock{font-size:11px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:4px}
+.quick-links{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.quick-link{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:16px 18px;
+  text-decoration:none;color:var(--text);
+  display:flex;align-items:center;gap:12px;
+  transition:all 0.15s;
+}
+.quick-link:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px)}
+.ql-icon{
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.ql-title{font-size:13px;font-weight:500}
+.ql-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.add-form{display:flex;flex-direction:column;gap:0}
+</style>
+{% endblock %}
+{% block content %}
+
+{% if role == 'shop' %}
+
+<div class="quick-links">
+  <a href="/billing" class="quick-link">
+    <div class="ql-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    </div>
+    <div>
+      <div class="ql-title">New Bill</div>
+      <div class="ql-sub">Create invoice</div>
+    </div>
+  </a>
+  <a href="/sales" class="quick-link">
+    <div class="ql-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
+    <div>
+      <div class="ql-title">Sales Report</div>
+      <div class="ql-sub">View history</div>
+    </div>
+  </a>
+  <a href="/change_password" class="quick-link">
+    <div class="ql-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <div>
+      <div class="ql-title">Security</div>
+      <div class="ql-sub">Change password</div>
+    </div>
+  </a>
+</div>
+
+<div class="grid-2" style="align-items:start">
+
+  <!-- Add Product -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Add Product</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/add_product" class="add-form">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input class="form-input" type="text" name="name" placeholder="e.g. Basmati Rice 5kg" required/>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Price (₹)</label>
+            <input class="form-input" type="number" name="price" placeholder="0" min="0" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock Qty</label>
+            <input class="form-input" type="number" name="stock" placeholder="0" min="0" required/>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:9px;margin-top:4px">
+          Add Product
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Product Catalog -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Products
+        {% if products is defined and products %}
+        <span class="badge badge-gray" style="margin-left:6px;font-size:10px">{{ products|length }}</span>
+        {% endif %}
+      </span>
+    </div>
+    <div class="card-body">
+      {% if products is defined and products %}
+      <div class="product-grid">
+        {% for p in products %}
+        <div class="product-tile">
+          <div class="pt-name" title="{{ p[1] }}">{{ p[1] }}</div>
+          <div class="pt-price">₹{{ p[2] }}</div>
+          <div class="pt-stock">
+            {% if p[3] > 10 %}
+              <span class="dot dot-ok"></span>{{ p[3] }} in stock
+            {% elif p[3] > 0 %}
+              <span class="dot dot-low"></span>Low: {{ p[3] }}
+            {% else %}
+              <span class="dot dot-out"></span>Out of stock
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:32px 0;color:var(--text3)">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" style="margin:0 auto 10px;display:block;opacity:0.4"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <div style="font-size:13px;margin-bottom:4px">No products yet</div>
+        <div style="font-size:12px">Add your first product using the form</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{% else %}
+<div class="alert alert-info" style="max-width:500px">
+  You are signed in as <strong>Admin</strong>. Use the navigation to manage shop users, or visit the billing and sales sections.
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Admin — ShopFlow{% endblock %}
+{% block page_title %}Shop Users{% endblock %}
+{% block extra_head %}
+<style>
+.shop-email{color:var(--text3);font-size:12px}
+</style>
+{% endblock %}
+{% block content %}
+
+{% set approved = namespace(n=0) %}
+{% set pending = namespace(n=0) %}
+{% for u in users %}
+  {% if u[4] == 'approved' %}{% set approved.n = approved.n + 1 %}
+  {% else %}{% set pending.n = pending.n + 1 %}{% endif %}
+{% endfor %}
+
+<div class="metrics-grid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="metric-card">
+    <div class="metric-label">Total Shops</div>
+    <div class="metric-value">{{ users|length }}</div>
+  </div>
+  <div class="metric-card teal">
+    <div class="metric-label">Approved</div>
+    <div class="metric-value">{{ approved.n }}</div>
+  </div>
+  <div class="metric-card amber">
+    <div class="metric-label">Pending Review</div>
+    <div class="metric-value">{{ pending.n }}</div>
+  </div>
+</div>
+
+<div class="card fade-in">
+  <div class="card-header">
+    <span class="card-title">Registered Shops</span>
+    <span class="badge badge-gray">{{ users|length }} total</span>
+  </div>
+
+  {% if users %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Shop Name</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td style="color:var(--text3)">{{ u[0] }}</td>
+          <td style="font-weight:500">{{ u[5] }}</td>
+          <td class="shop-email">{{ u[1] }}</td>
+          <td>
+            {% if u[4] == 'approved' %}
+              <span class="badge badge-green">Active</span>
+            {% else %}
+              <span class="badge badge-amber">Pending</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u[4] != 'approved' %}
+              <a href="/approve/{{ u[0] }}" class="btn btn-success btn-sm">Approve</a>
+            {% else %}
+              <span style="font-size:12px;color:var(--text3)">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:40px;color:var(--text3)">
+    <div style="font-size:13px">No shop registrations yet</div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

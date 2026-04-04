@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Sales — ShopFlow{% endblock %}
+{% block page_title %}Sales History{% endblock %}
+{% block extra_head %}
+<style>
+.sale-id{font-family:var(--font);font-size:13px;font-weight:600;color:var(--accent)}
+.amount{font-variant-numeric:tabular-nums;font-weight:600;color:var(--teal)}
+</style>
+{% endblock %}
+{% block content %}
+
+{% if sales %}
+
+{% set total = namespace(v=0) %}
+{% for s in sales %}{% set total.v = total.v + s[2] %}{% endfor %}
+
+<div class="metrics-grid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="metric-card teal">
+    <div class="metric-label">Total Revenue</div>
+    <div class="metric-value">₹{{ total.v }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Transactions</div>
+    <div class="metric-value">{{ sales|length }}</div>
+  </div>
+  <div class="metric-card amber">
+    <div class="metric-label">Avg. Bill Value</div>
+    <div class="metric-value">₹{{ (total.v / sales|length)|int }}</div>
+  </div>
+</div>
+
+<div class="card fade-in">
+  <div class="card-header">
+    <span class="card-title">All Transactions</span>
+    <span class="badge badge-gray">{{ sales|length }} records</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Invoice</th>
+          <th>Shop</th>
+          <th>Amount</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sales %}
+        <tr>
+          <td><span class="sale-id">#{{ s[0] }}</span></td>
+          <td>{{ s[1] }}</td>
+          <td><span class="amount">₹{{ s[2] }}</span></td>
+          <td><span class="badge badge-green">Paid</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+<div style="text-align:center;padding:60px 20px">
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1" style="margin:0 auto 16px;display:block"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+  <div style="font-size:15px;font-weight:500;margin-bottom:8px">No sales yet</div>
+  <div style="color:var(--text3);margin-bottom:20px">Your transactions will appear here after the first bill</div>
+  <a href="/billing" class="btn btn-primary">Create First Bill</a>
+</div>
+{% endif %}
+
+{% endblock %}
